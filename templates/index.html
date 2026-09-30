@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Music Generator</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>🎵 AI Music Generator</h1>
+            <p>Generate music using artificial intelligence</p>
+        </header>
+
+        <main>
+
+            <div class="input-section">
+
+                <label for="prompt">
+                    Describe the music you want
+                </label>
+
+                <textarea
+                    id="prompt"
+                    placeholder="Example: Calm piano music with soft drums and relaxing melody"
+                ></textarea>
+
+                <button id="generateBtn" onclick="generateMusic()">
+                    Generate Music
+                </button>
+
+            </div>
+
+
+            <div id="status" class="status"></div>
+
+
+            <div id="result" class="result hidden">
+
+                <h2>🎧 Generated Music</h2>
+
+                <audio
+                    id="audioPlayer"
+                    controls
+                ></audio>
+
+                <br>
+
+                <a
+                    id="downloadBtn"
+                    class="download-btn"
+                    download="generated_music.wav"
+                >
+                    Download Music
+                </a>
+
+            </div>
+
+        </main>
+
+        <footer>
+            <p>Music Generation with AI • MusicGen</p>
+        </footer>
+
+    </div>
+
+
+    <script>
+
+        async function generateMusic() {
+
+            const prompt =
+                document.getElementById("prompt").value.trim();
+
+            const button =
+                document.getElementById("generateBtn");
+
+            const status =
+                document.getElementById("status");
+
+            const result =
+                document.getElementById("result");
+
+            const audioPlayer =
+                document.getElementById("audioPlayer");
+
+            const downloadBtn =
+                document.getElementById("downloadBtn");
+
+
+            if (!prompt) {
+
+                status.textContent =
+                    "Please enter a music description.";
+
+                status.className = "status error";
+
+                return;
+            }
+
+
+            button.disabled = true;
+
+            button.textContent =
+                "Generating... Please wait";
+
+            status.textContent =
+                "AI is generating your music. This may take some time...";
+
+            status.className = "status loading";
+
+            result.classList.add("hidden");
+
+
+            try {
+
+                const response = await fetch("/generate", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+
+                });
+
+
+                const data = await response.json();
+
+
+                if (data.success) {
+
+                    status.textContent =
+                        data.message;
+
+                    status.className =
+                        "status success";
+
+
+                    audioPlayer.src =
+                        data.audio_url + "?t=" + Date.now();
+
+
+                    downloadBtn.href =
+                        data.audio_url;
+
+
+                    result.classList.remove("hidden");
+
+                } else {
+
+                    status.textContent =
+                        data.message;
+
+                    status.className =
+                        "status error";
+                }
+
+
+            } catch (error) {
+
+                status.textContent =
+                    "Something went wrong. Please check the terminal.";
+
+                status.className =
+                    "status error";
+
+                console.error(error);
+
+            }
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "Generate Music";
+        }
+
+    </script>
+
+</body>
+</html>
